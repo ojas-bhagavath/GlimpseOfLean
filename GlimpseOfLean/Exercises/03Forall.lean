@@ -39,19 +39,12 @@ by definition (in a very strong sense), it stands for "reflexivity".
 
 example (f g : ℝ → ℝ) (hf : even_fun f) (hg : even_fun g) : even_fun (f + g) := by
   -- Our assumption that f is even means ∀ x, f (-x) = f x
-  unfold even_fun at hf
-  -- and the same for g
-  unfold even_fun at hg
-  -- We need to prove ∀ x, (f+g)(-x) = (f+g)(x)
-  unfold even_fun
-  -- Let x be any real number
   intro x
   -- and let's compute
   calc
     (f + g) (-x) = f (-x) + g (-x)  := by rfl
                _ = f x + g (-x)     := by rw [hf x]
                _ = f x + g x        := by rw [hg x]
-               _ = (f + g) x        := by rfl
 
 
 /-
@@ -88,7 +81,10 @@ symbol you can put your mouse cursor above the symbol and wait for one second.
 -/
 
 example (f g : ℝ → ℝ) (hf : even_fun f) : even_fun (g ∘ f) := by
-  sorry
+  intro x
+  calc
+    (g ∘ f) (-x) = g (f (-x)) := by rfl
+    _ = g (f (x)) := by rw [hf]
 
 /-
 Let's have more quantifiers, and play with forward and backward reasoning.
@@ -103,12 +99,13 @@ def non_increasing (f : ℝ → ℝ) := ∀ x₁ x₂, x₁ ≤ x₂ → f x₁ 
 /- Let's be very explicit and use forward reasoning first. -/
 example (f g : ℝ → ℝ) (hf : non_decreasing f) (hg : non_decreasing g) :
     non_decreasing (g ∘ f) := by
-  -- Let x₁ and x₂ be real numbers such that x₁ ≤ x₂
+  unfold non_decreasing
   intro x₁ x₂ h
   -- Since f is non-decreasing, f x₁ ≤ f x₂.
-  have step₁ : f x₁ ≤ f x₂ := by exact hf x₁ x₂ h
+  have step : f x₁ ≤ f x₂ := by
+    exact hf x₁ x₂ h
   -- Since g is non-decreasing, we then get g (f x₁) ≤ g (f x₂).
-  exact hg (f x₁) (f x₂) step₁
+  exact hg _ _  step
 
 /-
 In the above proof, note how inconvenient it is to specify `x₁` and `x₂` in `hf x₁ x₂ h` since
@@ -156,7 +153,11 @@ example (f g : ℝ → ℝ) (hf : non_decreasing f) (hg : non_decreasing g) :
 
 example (f g : ℝ → ℝ) (hf : non_decreasing f) (hg : non_increasing g) :
     non_increasing (g ∘ f) := by
-  sorry
+  unfold non_increasing
+  intro x₁ x₂ h
+  apply hg
+  apply hf
+  exact h
 
 /- # Finding lemmas
 
@@ -170,7 +171,8 @@ The following exercises teach you two techniques to avoid needing to remember na
 /- Use `simp` to prove the following. Note that `X : Set ℝ`
 means that `X` is a set containing (only) real numbers. -/
 example (x : ℝ) (X Y : Set ℝ) (hx : x ∈ X) : x ∈ (X ∩ Y) ∪ (X \ Y) := by
-  sorry
+  simp
+  exact hx
 
 /- Use `apply?` to find the lemma that every continuous function with compact support
 has a global minimum. You can click on the suggestion that appears to replace
@@ -178,7 +180,7 @@ has a global minimum. You can click on the suggestion that appears to replace
 -/
 
 example (f : ℝ → ℝ) (hf : Continuous f) (h2f : HasCompactSupport f) : ∃ x, ∀ y, f x ≤ f y := by
-  sorry
+  exact Continuous.exists_forall_le_of_hasCompactSupport hf h2f
 
 /-
 Note that `apply?` does not only suggest full proofs. It can suggest lemmas that
@@ -186,7 +188,7 @@ apply but require to check side conditions. Accepting such a suggestion
 will output incomplete proofs using the `refine` tactic.
 
 Note that each suggestion comes with a list of side conditions that would need
-to be check. So you need to decide which suggestion to accept depending on what
+to be checked. So you need to decide which suggestion to accept depending on what
 the side conditions look like. For instance, if the goal is to prove continuity of
 a function, one lemma always applies: the lemma saying that any function out of
 a discrete topological space is continuous. But it leaves as a side condition
@@ -224,4 +226,3 @@ You can start with specialized files in the `Topics` folder. You have choice bet
   It ends with a constructor of the product topology and its universal property
   manipulating as few open sets as possible.
 -/
-
