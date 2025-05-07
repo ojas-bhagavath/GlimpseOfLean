@@ -24,10 +24,10 @@ Let's prove some exercises using `linarith`.
 -/
 
 example (a b : ℝ) (ha : 0 ≤ a) (hb : 0 ≤ b) : 0 ≤ a + b := by
-  sorry
+  linarith
 
 example (a b c d : ℝ) (hab : a ≤ b) (hcd : c ≤ d) : a + c ≤ b + d := by
-  sorry
+  linarith
 
 /-
 A sequence `u` is a function from `ℕ` to `ℝ`, hence Lean says
